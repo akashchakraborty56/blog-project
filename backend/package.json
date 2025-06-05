@@ -1,0 +1,21 @@
+{
+  "name": "backend",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy --minify",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings"
+  },
+  "dependencies": {
+    "@akash56/common": "^1.0.5",
+    "@prisma/client": "^6.8.2",
+    "@prisma/extension-accelerate": "^2.0.1",
+    "bcryptjs": "^3.0.2",
+    "dotenv": "^16.5.0",
+    "hono": "^4.7.11",
+    "prisma": "^6.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.29",
+    "wrangler": "^4.4.0"
+  }
+}

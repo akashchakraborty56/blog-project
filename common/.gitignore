@@ -1,0 +1,45 @@
+# Node modules
+node_modules/
+
+# Build output
+dist/
+build/
+out/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional: Ignore compiled JS files if you have them outside of dist
+*.js
+*.js.map
+*.d.ts
+
+# Environment variables
+.env
+.env.*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS and IDE-specific
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Test coverage
+coverage/
+
+# Misc
+*.local
+.cache/
+.next/
+turbo/
+
+# Optional: Ignore Prisma and other generated clients if you build them
+prisma/generated/
