@@ -106,6 +106,7 @@ userRouter.post('/signin', async (c) => {
 
     const token = await sign({
       userId: user.id,
+      name: user.name,
       email: user.email,
     }, c.env.JWT_SECRET)
     

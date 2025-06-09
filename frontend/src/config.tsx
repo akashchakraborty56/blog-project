@@ -1,0 +1,1 @@
+export const BACKEND_URL="https://backend.akash-56-chakraborty.workers.dev"

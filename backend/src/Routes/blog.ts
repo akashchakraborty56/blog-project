@@ -17,7 +17,13 @@ const blogRouter = new Hono<{
 
 blogRouter.use('/*', async (c, next) => {
 
-    try {
+  try {
+
+    
+
+    console.log('Middleware for JWT authentication triggered');
+   
+      
     const authHeader = c.req.header('Authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return c.json({ error: 'Unauthorized' }, 401)
@@ -28,7 +34,10 @@ blogRouter.use('/*', async (c, next) => {
         //c.status(401)
       return c.json({ error: 'Unauthorized' }, 401)
         }
-        c.set("decodedId", decoded.userId as string)
+    c.set("decodedId", decoded.userId as string)
+    c.header('Access-Control-Allow-Origin', '*'); // or specific origin
+  c.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  c.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     await next()
   } catch (e) {
         console.error('Error during JWT authentication:', e)
@@ -68,6 +77,11 @@ blogRouter.post('/', async (c) => {
         content: body.content,
         authorId: decodedId, // Assuming you have an authorId in the request
       },
+      select: {
+        id: true,
+        title: true,
+        content: true
+  }
     })
 
     return c.json({ message: 'Blog created successfully!', blog })
@@ -142,7 +156,10 @@ blogRouter.get('/', async (c) => {
         const blogs = await prisma.blog.findMany({
             where: {
                 authorId: decodedId, // Fetch all blogs for the authenticated user
-            },
+          },
+            include: {
+                author: { select: { name: true } }, // Include author's name
+            }
         })
         if (!blogs) {
             //c.status(404)
@@ -152,7 +169,8 @@ blogRouter.get('/', async (c) => {
         const simplifiedBlogs = blogs.map((blog) => ({
             id: blog.id,
             title: blog.title,
-            content: blog.content,
+          content: blog.content,
+            authorname: blog.author?.name || 'Unknown', // Safely access author's name
         }))
         return c.json({ blogs: simplifiedBlogs })
     } catch (e) {
@@ -171,19 +189,32 @@ blogRouter.get('/bulk', async (c) => {
         }).$extends(withAccelerate())
 
         console.log('Fetching all blogs...');
-        
 
-        const blogs = await prisma.blog.findMany()
-        
-       const simplifiedBlogs= blogs.map((blog) => {
-            return {
-                id: blog.id,
-                title: blog.title,
+        const decodedId = c.get("decodedId") as string
+
+        if (!decodedId) {
+            //c.status(401)
+            return c.json({ error: 'Unauthorized' }, 401)
+        }
+        const blogs= await prisma.blog.findMany({
+            include: {
+                author: { select: { name: true } } // Include author's name
             }
         })
+      
+            const simplifiedBlogs = blogs.map((blog) => {
+              return {
+                id: blog.id,
+                title: blog.title,
+                content: blog.content,
+                author: {
+                  name: blog.author?.name || 'Unknown'
+          }
+        };
+      });
 
         //c.status(200)
-        return c.json({ simplifiedBlogs })
+        return c.json({ blogs: simplifiedBlogs })
     } catch (e) {
         console.error('Error during fetching blog:', e)
         //c.status(500)
@@ -215,7 +246,7 @@ blogRouter.get('/:id', async (c) => {
                 // Ensure the blog belongs to the authenticated user
             },
             include: {
-                author: { select: { name: true } }, // Include author's name
+                author: { select: { name: true } } // Include author's name
             }
         })
 
@@ -227,11 +258,15 @@ blogRouter.get('/:id', async (c) => {
         //c.status(200)
 
         return c.json({
+          blog: {
             id: blog.id,
             title: blog.title,
             content: blog.content,
-            author: blog.author.name, // Include author's name
-        })
+            author: {
+              name: blog.author?.name || 'Unknown'
+            }
+          }
+})
 
     } catch (e) {
         console.error('Error during fetching blog:', e)
